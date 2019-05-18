@@ -1,59 +1,53 @@
 (ns combinatorics.core
   (:require [clojure.math.combinatorics :as mc]))
 
+(defn find-x [stack start end]
+  (loop [i start]
+    (when (< i end) (if (some #(= i %) stack) (recur (inc i)) i))))
+
 (defn permutation
-  [f data n]
-  (let [size (count data)
-        n (if (< n size) n size)
-        push-stack (fn [stack start]
-                     (loop [i start]
-                       (if (< i size)
-                         (if (some #(= i %) stack)
-                           (recur (inc i))
-                           [(conj stack i) i])
-                         [stack i])))]
-    (if (< n 1)
-      (if (f (empty data)) 1 0)
-      (loop [stack []]
-        (let [stack (loop [stack (first (push-stack stack 0))]
-                      (if (= n (count stack))
-                        (do (f (reduce (fn [r i] (conj r (nth data i))) [] stack))
-                            (recur (loop [[stack i] [stack size]]
-                                     (if (and (<= size i) (not (empty? stack)))
-                                       (recur (push-stack (pop stack) (inc (last stack))))
-                                       stack))))
-                        stack))]
+  [f coll n]
+  (let [v (vec coll)
+        size (count v)
+        number (atom 0)]
+    (when (< 0 n size)
+      (loop [stack [] begin 0]
+        (if-let [x (some (fn [i] (when-not (some #(= i %) stack) i)) (range begin size))]
+          (let [s (conj stack x)]
+            (if (= n (count s))
+              (do (f (map v s))
+                  (swap! number inc)
+                  (recur stack (inc x)))
+              (recur s 0)))
           (when-not (empty? stack)
-            (recur stack)))))))
+            (recur (pop stack) (inc (last stack)))))))
+    @number))
 
 (defn combination
-  [f data n]
-  (let [size (count data)
-        n (if (< n size) n size)
-        x (- size n)]
-    (if (< n 1)
-      (if (f (empty data)) 1 0)
-      (loop [[stack i] [[] 0]]
-        (let [[stack i] (loop [[stack i] [(conj stack i) i]]
-                          (if (= n (count stack))
-                            (do (f (reduce (fn [r i] (conj r (nth data i))) [] stack))
-                                (recur (loop [[stack i] [stack size]]
-                                         (if (and (<= (+ x (count stack)) i) (not (empty? stack)))
-                                           (let [[stack i] [(pop stack) (inc (last stack))]]
-                                             (if (< (+ (count stack) x) i)
-                                               (recur [stack i])
-                                               [(conj stack i) i]))
-                                           [stack i]))))
-                            [stack i]))]
-          (when-not (empty? stack)
-            (recur [stack (inc i)])))))))
+  [f coll n]
+  (let [v (vec coll)
+        size (count v)
+        number (atom 0)]
+    (if (zero? n)
+      (do (f ()) (swap! number inc))
+      (when-not (or (< n 0) (< size n))
+        (loop [stack [] x 0]
+          (if (< x size)
+            (let [s (conj stack x)]
+              (if (= n (count s))
+                (do (f (map v s))
+                    (swap! number inc)
+                    (recur stack (inc x)))
+                (recur s (inc x))))
+            (when-not (empty? stack)
+              (recur (pop stack) (inc (last stack))))))))
+    @number))
 
 (comment
 
   (permutation println [1 2 3 4 5 6 7] 4)
 
   (combination println [1 2 3 4 5 6 7] 4))
-
 
 (fn [x s]
   (letfn [(powerset [s]
@@ -66,8 +60,7 @@
 (comment
   (mc/combinations [1 2 3 4 5] 2)
 
-  (mc/permutations [1 2 3 4]))
-
+  (mc/permutations [1 2 3 4 5 6 7 8 9 0]))
 
 
 
