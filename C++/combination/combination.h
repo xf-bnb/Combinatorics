@@ -61,15 +61,16 @@ unsigned int Combination(_FuncT pFunc, unsigned int m, const unsigned int* _Src,
                 ++_Sum;
                 ++_Top;
 
-            _Full:          if (_Sum == m)
-            {
-                ++i;
-                pFunc(_Stack, _Count, _Top, n);
+			_Full:
+				if (_Sum == m)
+				{
+					++i;
+					pFunc(_Stack, _Count, _Top, n);
 
-                --_Top;
-                _Sum -= _Count[_Top];
-                _Count[_Top] = 0;
-            }
+					--_Top;
+					_Sum -= _Count[_Top];
+					_Count[_Top] = 0;
+				}
             }
         }
 
