@@ -123,16 +123,28 @@
     (< (:value (card-type (:type a-info)))
        (:value (card-type (:type b-info))))))
 
+(defn show-poker-info
+  [c-seq c-info]
+  (println (cards-name c-seq)
+           (:name (card-type (:type c-info)))
+           (if (= :twins (:type c-info))
+             (cards-name (:poker c-info))
+             (card-name (:poker c-info)))))
+
 (defn count-poker
   [record seq-1 seq-2]
   (let [info-1 (type-info seq-1)
         info-2 (type-info seq-2)
-        win-player (if (compare-type-info info-1 info-2) :player-2 :player-1)]
+        win-player (if (compare-type-info info-1 info-2) :player-2 :player-1)
+        update-value (fn [n] (if n (inc n) 1))]
+    (show-poker-info seq-1 info-1)
+    (show-poker-info seq-2 info-2)
+    (println "--------------------------- winner:" win-player)
     (-> record
-        (update-in [win-player :win] inc)
-        (update-in [:player-1 (:type info-1)] inc)
-        (update-in [:player-1 (:type info-2)] inc)
-        (update :total inc))))
+        (update-in [win-player :win] update-value)
+        (update-in [:player-1 :type (:type info-1)] update-value)
+        (update-in [:player-2 :type (:type info-2)] update-value)
+        (update :total update-value))))
 
 (defn poker-analyze
   [a-seq b-seq]
