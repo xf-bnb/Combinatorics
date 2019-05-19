@@ -11,7 +11,7 @@
   (let [v (vec coll)
         size (count v)
         number (atom 0)]
-    (when (< 0 n size)
+    (when (and (< 0 n) (<= n size))
       (loop [stack [] begin 0]
         (if-let [x (some (fn [i] (when-not (some #(= i %) stack) i)) (range begin size))]
           (let [s (conj stack x)]
@@ -53,7 +53,7 @@
         number (atom 0)]
     (if (zero? n)
       (do (f ()) (swap! number inc))
-      (when-not (or (< n 0) (< size n))
+      (when (and (< 0 n) (<= n size))
         (loop [stack [] x 0]
           (if (< x size)
             (let [s (conj stack x)]
@@ -90,7 +90,7 @@
     (do (f ()) 1)
     (let [size (count coll)
           number (atom 0)]
-      (when-not (or (< n 0) (< size n))
+      (when (and (< 0 n) (<= n size))
         (let [coll-map (frequencies coll)
               k-seq (keys coll-map)
               v-seq (vals coll-map)]
@@ -114,13 +114,18 @@
 
   (mc/permutations [1 2 3 4 5 6 7 8 9 0]))
 
+(comment
+  (fn [x s]
+    (letfn [(powerset [s]
+              (reduce (fn [ps x]
+                        (reduce (fn [ps s] (conj ps (conj s x))) ps ps))
+                      #{#{}}
+                      s))]
+      (set (filter #(= x (count %)) (powerset s)))))
 
-(fn [x s]
-  (letfn [(powerset [s]
-            (reduce (fn [ps x]
-                      (reduce (fn [ps s] (conj ps (conj s x))) ps ps))
-                    #{#{}}
-                    s))]
-    (set (filter #(= x (count %)) (powerset s)))))
-
-
+  (fn ff [n xs]
+    (if (zero? n)
+      #{#{}}
+      (set (for [x xs
+                 y (ff (dec n) (disj xs x))]
+             (conj y x))))))

@@ -2,13 +2,10 @@
   (:require [combinatorics.impl :as impl]))
 
 (def all-poker "定义港式五张需要的整副扑克"
-  [[:T :8] [:X :8] [:M :8] [:F :8]
-   [:T :9] [:X :9] [:M :9] [:F :9]
-   [:T :10] [:X :10] [:M :10] [:F :10]
-   [:T :J] [:X :J] [:M :J] [:F :J]
-   [:T :Q] [:X :Q] [:M :Q] [:F :Q]
-   [:T :K] [:X :K] [:M :K] [:F :K]
-   [:T :A] [:X :A] [:M :A] [:F :A]])
+  [[:T :8] [:T :9] [:T :10] [:T :J] [:T :Q] [:T :K] [:T :A]
+   [:X :8] [:X :9] [:X :10] [:X :J] [:X :Q] [:X :K] [:X :A]
+   [:M :8] [:M :9] [:M :10] [:M :J] [:M :Q] [:M :K] [:M :A]
+   [:F :8] [:F :9] [:F :10] [:F :J] [:F :Q] [:F :K] [:F :A]])
 
 (def card-type "定义牌型"
   {:sequence {:name "同花顺" :value 9}
@@ -28,31 +25,21 @@
    :J  {:name "J" :value 6}
    :Q  {:name "Q" :value 7}
    :K  {:name "K" :value 8}
-   :A  {:name "A" :value 9}
-   :N  {:name "未知" :value 0}})
+   :A  {:name "A" :value 9}})
 
 (def poker-flower
   {:T {:name "桃" :value 4}
    :X {:name "心" :value 3}
    :M {:name "梅" :value 2}
-   :F {:name "方" :value 1}
-   :N {:name "未知" :value 0}})
+   :F {:name "方" :value 1}})
 
-(defn card-name
-  [[k v]]
-  (str (-> poker-flower k :name) (-> poker-point v :name)))
+(defn describe-card [[k v]] (str (-> poker-flower k :name) (-> poker-point v :name)))
 
-(defn cards-name
-  [card-seq]
-  (mapv card-name card-seq))
+(defn describe-cards [card-seq] (mapv describe-card card-seq))
 
-(defn point-value
-  [point]
-  (-> (second point) poker-point :value))
+(defn point-value [point] (-> (second point) poker-point :value))
 
-(defn flower-value
-  [flower]
-  (-> (first flower) poker-flower :value))
+(defn flower-value [flower] (-> (first flower) poker-flower :value))
 
 (defn find-max
   "从一组牌中找出指定点数的最大的牌"
@@ -60,10 +47,11 @@
   (reduce (fn [a b] (if (and (= (second a) (second b))
                              (< (flower-value a) (flower-value b)))
                       b a))
-          [:N point]
+          [:F point]
           c-seq))
 
 (defn sort-by-point
+  "根据点数对一组牌进行排序"
   [card-seq]
   (sort #(< (point-value %1) (point-value %2)) card-seq))
 
@@ -123,30 +111,42 @@
     (< (:value (card-type (:type a-info)))
        (:value (card-type (:type b-info))))))
 
-(defn show-poker-info
+(defn describe-poker-info
   [c-seq c-info]
-  (println (cards-name c-seq)
-           (:name (card-type (:type c-info)))
-           (if (= :twins (:type c-info))
-             (cards-name (:poker c-info))
-             (card-name (:poker c-info)))))
+  (str (describe-cards c-seq) "-> "
+       (:name (card-type (:type c-info))) ": "
+       (if (= :twins (:type c-info))
+         (describe-cards (:poker c-info))
+         (describe-card (:poker c-info)))))
 
 (defn count-poker
+  "统计两组扑克数据"
   [record seq-1 seq-2]
   (let [info-1 (type-info seq-1)
         info-2 (type-info seq-2)
         win-player (if (compare-type-info info-1 info-2) :player-2 :player-1)
         update-value (fn [n] (if n (inc n) 1))]
-    (show-poker-info seq-1 info-1)
-    (show-poker-info seq-2 info-2)
-    (println "--------------------------- winner:" win-player)
+    (println "player-1:" (describe-poker-info seq-1 info-1))
+    (println "player-2:" (describe-poker-info seq-2 info-2))
+    (println "winner:" win-player)
+    (println "---------------------------------------------------------------")
     (-> record
         (update-in [win-player :win] update-value)
         (update-in [:player-1 :type (:type info-1)] update-value)
         (update-in [:player-2 :type (:type info-2)] update-value)
         (update :total update-value))))
 
+(defn count-probability
+  "统计赢牌概率"
+  [record]
+  (letfn [(probability [player]
+            (format "%.2f%%" (double (* (/ (:win (player record)) (:total record)) 100))))]
+    (-> record
+        (assoc-in [:player-1 :probability] (probability :player-1))
+        (assoc-in [:player-2 :probability] (probability :player-2)))))
+
 (defn poker-analyze
+  "分析两组牌型"
   [a-seq b-seq]
   (let [n1 (count a-seq)
         n2 (count b-seq)
@@ -158,5 +158,15 @@
                                     #(swap! count-list conj
                                             [(concat a-seq %)
                                              (concat b-seq (filter-poker c-seq %))]))))
-    (reduce (fn [record [seq-1 seq-2]] (count-poker record seq-1 seq-2)) {} @count-list)))
+    (-> (reduce (fn [record [seq-1 seq-2]] (count-poker record seq-1 seq-2)) {} @count-list)
+        count-probability)))
+
+(comment
+
+  (poker-analyze [[:T :8] [:X :8]]
+                 [[:T :9] [:X :J] [:M :8]])
+
+  (poker-analyze [[:T :8] [:X :8] [:T :Q]]
+                 [[:T :9] [:X :J] [:M :8] [:F :Q]]))
+
 
