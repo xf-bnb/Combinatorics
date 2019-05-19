@@ -121,7 +121,7 @@
 
 (defn count-poker
   "统计两组扑克数据"
-  [record seq-1 seq-2]
+  [record [seq-1 seq-2]]
   (let [info-1 (type-info seq-1)
         info-2 (type-info seq-2)
         win-player (if (compare-type-info info-1 info-2) :player-2 :player-1)
@@ -158,8 +158,7 @@
                                     #(swap! count-list conj
                                             [(concat a-seq %)
                                              (concat b-seq (filter-poker c-seq %))]))))
-    (-> (reduce (fn [record [seq-1 seq-2]] (count-poker record seq-1 seq-2)) {} @count-list)
-        count-probability)))
+    (count-probability (reduce #(count-poker %1 %2) {} @count-list))))
 
 (comment
 
