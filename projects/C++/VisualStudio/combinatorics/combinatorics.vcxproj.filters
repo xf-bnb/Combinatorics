@@ -15,18 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="permutation.h">
+    <ClInclude Include="..\..\sources\combination.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="combination.h">
+    <ClInclude Include="..\..\sources\permutation.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="simple_stack.h">
+    <ClInclude Include="..\..\sources\simple_stack.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="..\..\sources\main.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
   </ItemGroup>

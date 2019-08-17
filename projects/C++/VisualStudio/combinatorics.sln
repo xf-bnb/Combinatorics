@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2026
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29209.62
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "combination", "combination\combination.vcxproj", "{8DC5A714-77A3-4CF2-B86B-3C02DFBE3920}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "combinatorics", "combinatorics\combinatorics.vcxproj", "{8DC5A714-77A3-4CF2-B86B-3C02DFBE3920}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
